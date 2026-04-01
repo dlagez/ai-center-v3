@@ -4,5 +4,6 @@ pydantic
 litellm
 langchain-core
 langchain-docling
+pypdf
 qdrant-client
 pytest

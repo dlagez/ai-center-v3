@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+from io import BytesIO
 from pathlib import Path
+from urllib.parse import urlparse
 from urllib.request import urlopen
 
 from langchain_core.documents import Document
@@ -12,6 +14,9 @@ from src.processing.loaders.base import ParsedOutput
 
 class DoclingDocumentLoader:
     def load(self, source: str) -> ParsedOutput:
+        if self._is_pdf_source(source):
+            return self._load_pdf_text(source)
+
         try:
             return self._load_with_docling(source)
         except ModuleNotFoundError:
@@ -30,6 +35,47 @@ class DoclingDocumentLoader:
                 for index, document in enumerate(documents)
             ],
         }
+
+    def _load_pdf_text(self, source: str) -> ParsedOutput:
+        from pypdf import PdfReader
+
+        handle = self._open_pdf_source(source)
+        try:
+            reader = PdfReader(handle)
+            documents: list[Document] = []
+            chunks: list[DocChunk] = []
+
+            for index, page in enumerate(reader.pages, start=1):
+                text = (page.extract_text() or "").strip()
+                if not text:
+                    continue
+
+                metadata = {
+                    "page": index,
+                    "parser": "pdf_text",
+                    "text_layer_loader": True,
+                }
+                documents.append(Document(page_content=text, metadata=metadata))
+                chunks.append(
+                    DocChunk(
+                        chunk_id="",
+                        text=text,
+                        page=index,
+                        parser="pdf_text",
+                        chunk_index=len(chunks),
+                        metadata=metadata,
+                    )
+                )
+
+            if not chunks:
+                raise ValueError("No text layer content could be extracted from the PDF.")
+
+            return {
+                "documents": documents,
+                "doc_chunks": chunks,
+            }
+        finally:
+            handle.close()
 
     def _load_with_text_fallback(self, source: str) -> ParsedOutput:
         text = self._read_text(source)
@@ -73,3 +119,15 @@ class DoclingDocumentLoader:
                 return json.dumps(json.load(handle), ensure_ascii=False, indent=2)
         with path.open("r", encoding="utf-8") as handle:
             return handle.read()
+
+    def _open_pdf_source(self, source: str):
+        if source.startswith(("http://", "https://")):
+            with urlopen(source) as response:  # noqa: S310
+                return BytesIO(response.read())
+
+        return Path(source).open("rb")
+
+    def _is_pdf_source(self, source: str) -> bool:
+        if source.startswith(("http://", "https://")):
+            return urlparse(source).path.lower().endswith(".pdf")
+        return Path(source).suffix.lower() == ".pdf"

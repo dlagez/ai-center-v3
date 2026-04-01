@@ -10,6 +10,7 @@ dependencies = [
     "langchain-docling",
     "litellm",
     "pydantic",
+    "pypdf",
     "qdrant-client",
     "uvicorn",
 ]

@@ -88,7 +88,7 @@ The response includes:
 ## Current Scope
 
 - Input source can be a file under `data/` or a URL.
-- Docling is the only parsing path in the current implementation.
+- PDF currently uses direct text-layer extraction; other formats use Docling.
 - `processing/chunking` is still reserved; the main path indexes Docling `DOC_CHUNKS` directly.
 - `processing/normalize` only handles light validation and metadata completion.
 - Metadata is stored in SQLite and vectors are stored in local Qdrant.
