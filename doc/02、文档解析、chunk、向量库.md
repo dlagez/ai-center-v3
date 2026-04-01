@@ -5,7 +5,7 @@
 
 # 一、目标定位
 
-这个子系统建议你做成一个**独立单服务**，职责很清楚：
+这个子系统建议你先作为**当前仓库内的独立业务子系统**来组织，职责很清楚：
 
 1. 接收 `data/` 目录中的文档路径，或外部文档 URL。
 2. 当前通过 Docling 解析器把文件统一转换成标准 `DOC_CHUNKS`。
@@ -263,11 +263,13 @@ LangGraph 官方文档明确强调 durable execution、streaming、human-in-the-
 
 # 四、项目文件结构
 
-我建议你直接按下面这个结构开项目：
+我建议你在当前仓库里直接按下面这个 `src/` 结构组织代码：
 
 ```text
-document-service/
-├── app/
+ai-center-v3/
+├── data/
+├── doc/
+├── src/
 │   ├── main.py
 │   ├── config/
 │   │   ├── settings.py
@@ -293,7 +295,7 @@ document-service/
 │   ├── processing/
 │   │   ├── loaders/
 │   │   │   ├── base.py
-│   │   │   ├── docling_loader.py
+│   │   │   └── docling_loader.py
 │   │   ├── normalize/            # 预留轻量标准化
 │   │   │   ├── metadata.py
 │   │   │   └── validators.py
@@ -525,7 +527,7 @@ LangChain retrieval 文档对三种模式的划分很清楚：
 
 **服务形态**
 
-* 一个独立的 `document-service`
+* 当前仓库内采用 `src/` 组织的文档处理子系统
 
 **主栈**
 

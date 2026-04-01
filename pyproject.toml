@@ -1,0 +1,22 @@
+[project]
+name = "ai-center-v3"
+version = "0.1.0"
+description = "Document processing and retrieval service built with FastAPI, SQLite, and Qdrant."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi",
+    "langchain-core",
+    "pydantic",
+    "qdrant-client",
+    "uvicorn",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
