@@ -1,20 +1,16 @@
 from __future__ import annotations
 
-import math
+from src.infra.litellm_client import LiteLLMClient
 
 
-class DeterministicEmbeddingService:
-    def __init__(self, dimensions: int = 64) -> None:
-        self.dimensions = dimensions
+class LiteLLMEmbeddingService:
+    def __init__(self, client: LiteLLMClient) -> None:
+        self.client = client
 
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
-        return [self.embed_query(text) for text in texts]
+        if not texts:
+            return []
+        return self.client.embed_texts(texts)
 
     def embed_query(self, query: str) -> list[float]:
-        vector = [0.0] * self.dimensions
-        for index, char in enumerate(query):
-            bucket = index % self.dimensions
-            vector[bucket] += (ord(char) % 97) / 97.0
-
-        norm = math.sqrt(sum(value * value for value in vector)) or 1.0
-        return [value / norm for value in vector]
+        return self.client.embed_texts([query])[0]

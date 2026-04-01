@@ -16,8 +16,15 @@ class QdrantStore:
         self.vector_size = vector_size
 
     def ensure_collection(self) -> None:
-        collections = self._client.get_collections().collections
-        if any(collection.name == self.collection_name for collection in collections):
+        if self._client.collection_exists(self.collection_name):
+            collection_info = self._client.get_collection(self.collection_name)
+            existing_size = self._get_vector_size(collection_info)
+            if existing_size is not None and existing_size != self.vector_size:
+                raise RuntimeError(
+                    "Qdrant collection vector size mismatch. "
+                    f"Collection `{self.collection_name}` uses {existing_size}, "
+                    f"but settings require {self.vector_size}."
+                )
             return
 
         self._client.create_collection(
@@ -27,6 +34,13 @@ class QdrantStore:
                 distance=qdrant_models.Distance.COSINE,
             ),
         )
+
+    def _get_vector_size(self, collection_info: Any) -> int | None:
+        vectors = collection_info.config.params.vectors
+        size = getattr(vectors, "size", None)
+        if isinstance(size, int):
+            return size
+        return None
 
     def upsert_chunks(self, chunks: list[DocChunk], vectors: list[list[float]]) -> None:
         self.ensure_collection()
@@ -73,3 +87,6 @@ class QdrantStore:
             with_vectors=False,
         )
         return response.points
+
+    def close(self) -> None:
+        self._client.close()

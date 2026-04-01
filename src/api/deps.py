@@ -3,8 +3,9 @@ from __future__ import annotations
 from functools import lru_cache
 
 from src.config.settings import Settings, get_settings
-from src.embeddings.factory import EmbeddingFactory
+from src.embeddings.service import LiteLLMEmbeddingService
 from src.infra.db import SQLiteDatabase
+from src.infra.litellm_client import LiteLLMClient
 from src.infra.qdrant import QdrantStore
 from src.indexing.service import IndexingService
 from src.indexing.vector_store import VectorStoreGateway
@@ -54,9 +55,24 @@ def get_loader() -> DoclingDocumentLoader:
 
 
 @lru_cache(maxsize=1)
-def get_embedding_service():
+def get_litellm_client() -> LiteLLMClient:
     settings = get_settings()
-    return EmbeddingFactory.create(settings.embedding_dimensions)
+    return LiteLLMClient(
+        api_key=settings.litellm_api_key,
+        api_base=settings.litellm_api_base,
+        chat_model=settings.litellm_chat_model,
+        embedding_model=settings.litellm_embedding_model,
+        embedding_dimensions=settings.embedding_dimensions,
+        embedding_batch_size=settings.litellm_embedding_batch_size,
+        timeout_seconds=settings.litellm_timeout_seconds,
+        chat_temperature=settings.litellm_chat_temperature,
+        chat_max_tokens=settings.litellm_chat_max_tokens,
+    )
+
+
+@lru_cache(maxsize=1)
+def get_embedding_service():
+    return LiteLLMEmbeddingService(get_litellm_client())
 
 
 @lru_cache(maxsize=1)
@@ -90,7 +106,7 @@ def get_retrieval_service() -> RetrievalService:
 
 @lru_cache(maxsize=1)
 def get_rag_service() -> RAGService:
-    return RAGService(get_retrieval_service(), AnswerChain())
+    return RAGService(get_retrieval_service(), AnswerChain(get_litellm_client()))
 
 
 @lru_cache(maxsize=1)

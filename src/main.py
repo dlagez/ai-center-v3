@@ -18,8 +18,10 @@ def create_app() -> FastAPI:
         settings.data_dir.mkdir(parents=True, exist_ok=True)
         settings.qdrant_path.mkdir(parents=True, exist_ok=True)
         get_db().initialize()
-        get_qdrant_store().ensure_collection()
+        qdrant_store = get_qdrant_store()
+        qdrant_store.ensure_collection()
         yield
+        qdrant_store.close()
 
     app = FastAPI(title=settings.app_name, debug=settings.debug, lifespan=lifespan)
 

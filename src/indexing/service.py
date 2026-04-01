@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from src.embeddings.service import DeterministicEmbeddingService
+from src.embeddings.base import EmbeddingService
 from src.indexing.upsert import UpsertResult
 from src.indexing.vector_store import VectorStoreGateway
 from src.models.chunk import DocChunk
@@ -9,7 +9,7 @@ from src.models.chunk import DocChunk
 class IndexingService:
     def __init__(
         self,
-        embeddings: DeterministicEmbeddingService,
+        embeddings: EmbeddingService,
         vector_store: VectorStoreGateway,
     ) -> None:
         self.embeddings = embeddings

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from langchain_core.documents import Document
 
-from src.embeddings.service import DeterministicEmbeddingService
+from src.embeddings.base import EmbeddingService
 from src.infra.qdrant import QdrantStore
 from src.retrieval.filters import build_qdrant_filter
 from src.retrieval.query_plan import QueryPlan
@@ -15,7 +15,7 @@ class RetrievalService:
     def __init__(
         self,
         qdrant_store: QdrantStore,
-        embeddings: DeterministicEmbeddingService,
+        embeddings: EmbeddingService,
         reranker: IdentityReranker | None = None,
     ) -> None:
         self.qdrant_store = qdrant_store
@@ -43,7 +43,10 @@ class RetrievalService:
     ) -> list[Document]:
         hits = self.search(query=query, top_k=top_k, metadata_filter=metadata_filter)
         return [
-            Document(page_content=hit.text, metadata=hit.metadata | {"chunk_id": hit.chunk_id})
+            Document(
+                page_content=hit.text,
+                metadata=hit.metadata | {"chunk_id": hit.chunk_id, "score": hit.score},
+            )
             for hit in hits
         ]
 

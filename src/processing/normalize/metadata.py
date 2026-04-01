@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from src.ingestion.service import PreparedSource
 from src.models.chunk import DocChunk
-from src.utils.ids import new_id
+from src.utils.ids import new_uuid_id
 
 
 def normalize_doc_chunks(
@@ -19,7 +19,7 @@ def normalize_doc_chunks(
         normalized.append(
             chunk.model_copy(
                 update={
-                    "chunk_id": chunk.chunk_id or new_id("chunk"),
+                    "chunk_id": chunk.chunk_id or new_uuid_id(),
                     "document_id": document_id,
                     "source_uri": prepared_source.source_uri,
                     "file_name": prepared_source.file_name,

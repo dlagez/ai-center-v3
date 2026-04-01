@@ -1,6 +1,7 @@
 fastapi
 uvicorn
 pydantic
+litellm
 langchain-core
 langchain-docling
 qdrant-client

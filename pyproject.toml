@@ -8,6 +8,7 @@ dependencies = [
     "fastapi",
     "langchain-core",
     "langchain-docling",
+    "litellm",
     "pydantic",
     "qdrant-client",
     "uvicorn",
