@@ -2,5 +2,6 @@ fastapi
 uvicorn
 pydantic
 langchain-core
+langchain-docling
 qdrant-client
 pytest
